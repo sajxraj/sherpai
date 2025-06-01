@@ -21,7 +21,6 @@ export default (app: Probot) => {
     for (const file of files.data) {
       if (file.patch) {
         const comments = await getAIComments(file.filename, file.patch);
-        console.log(comments);
         for (const c of comments) {
           await context.octokit.pulls.createReviewComment({
             owner: context.payload.repository.owner.login,
