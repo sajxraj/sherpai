@@ -1,0 +1,36 @@
+{
+  "name": "sherpai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inspired by the Sherpa people of the Himalayas, known for their expertise and guidance in navigating difficult paths. Our bot is designed to bring that same thoughtful support to your code.",
+  "author": "Sajan Rajbhandari",
+  "license": "ISC",
+  "homepage": "https://github.com//",
+  "keywords": [
+    "probot",
+    "github",
+    "probot-app"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "probot run ./lib/index.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "openai": "^5.0.1",
+    "probot": "^13.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.15.2",
+    "nock": "^14.0.0-beta.5",
+    "smee-client": "^2.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.1"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "type": "module"
+}
