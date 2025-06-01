@@ -16,7 +16,7 @@ Sherpai is a GitHub App built with [Probot](https://github.com/probot/probot) th
 
 1. Clone this repository
 ```sh
-git clone https://github.com/yourusername/sherpai.git
+git clone https://github.com/sajxraj/sherpai.git
 cd sherpai
 ```
 
@@ -49,7 +49,7 @@ npm install
    - Add the following variables:
    ```
    APP_ID=<your-app-id>
-   PRIVATE_KEY_PATH=<path-to-your-pem-file>
+   PRIVATE_KEY=<private-key-from-pem-file>
    WEBHOOK_SECRET=<your-webhook-secret>
    OPENAI_API_KEY=<your-openai-api-key>
    ```
