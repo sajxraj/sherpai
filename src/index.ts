@@ -22,16 +22,29 @@ export default (app: Probot) => {
       if (file.patch) {
         const comments = await getAIComments(file.filename, file.patch);
         for (const c of comments) {
-          await context.octokit.pulls.createReviewComment({
-            owner: context.payload.repository.owner.login,
-            repo: context.payload.repository.name,
-            pull_number: pr.number,
-            body: c.text,
-            commit_id: pr.head.sha,
-            path: file.filename,
-            line: c.line,
-            side: 'RIGHT',
-          });
+          if (c.line) {
+            await context.octokit.pulls.createReviewComment({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: pr.number,
+              body: c.text,
+              commit_id: pr.head.sha,
+              path: file.filename,
+              line: c.line,
+              side: 'RIGHT',
+              position: c.line,
+              subject_type: 'line'
+            });
+          } else {
+            // For general comments without specific line numbers
+            await context.octokit.pulls.createReview({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: pr.number,
+              body: c.text,
+              event: 'COMMENT'
+            });
+          }
         }
       }
     }
