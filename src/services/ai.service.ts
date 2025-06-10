@@ -43,7 +43,7 @@ export async function getAIComments(filename: string, patch: string) {
     Here's the diff to review:\n\n${patch}`;
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
     });
