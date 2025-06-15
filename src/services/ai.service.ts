@@ -3,12 +3,16 @@ import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 interface AIComment {
-    line?: number;
-    text: string;
+  line?: number;
+  text: string;
 }
 
-export async function getAIComments(filename: string, patch: string) {
-    const prompt = `You are an expert code reviewer with deep knowledge of multiple programming languages and software development best practices.
+export async function getAIComments(
+  filename: string,
+  patch: string,
+  config: string | null
+) {
+  const prompt = `You are an expert code reviewer with deep knowledge of multiple programming languages and software development best practices.
     Review this diff in file ${filename} and provide detailed inline comments.
 
     IMPORTANT: You must respond with a valid JSON array of comments. Each comment should be an object with:
@@ -34,6 +38,12 @@ export async function getAIComments(filename: string, patch: string) {
     5. Code style and best practices
     6. Potential bugs or edge cases
     7. Maintainability concerns
+
+    ${
+      config
+        ? "Also, take into account the following configuration:" + config
+        : ""
+    }
     
     For each issue found, provide a clear explanation and suggestion for improvement.
     Be thorough and don't hesitate to point out even minor issues that could cause problems.
