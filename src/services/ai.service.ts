@@ -52,17 +52,17 @@ export async function getAIComments(
     
     Here's the diff to review:\n\n${patch}`;
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.3,
-  });
+    const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+    });
 
-  try {
-    const response = completion.choices[0].message.content ?? "[]";
-    return JSON.parse(response) as AIComment[];
-  } catch (error) {
-    console.error("Error parsing AI response:", error);
-    return [];
-  }
+    try {
+        const response = completion.choices[0].message.content ?? "[]";
+        return JSON.parse(response) as AIComment[];
+    } catch (error) {
+        console.error("Error parsing AI response:", error);
+        return [];
+    }
 }
