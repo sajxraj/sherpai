@@ -34,6 +34,20 @@ export default (app: Probot) => {
       const prNumber = pr.number;
       const headSha = pr.head.sha;
 
+      const { data: appInfo } = await context.octokit.apps.getAuthenticated();
+      
+      if (!appInfo?.slug) {
+        context.log.error('Could not get app slug');
+        return;
+      }
+
+      await context.octokit.pulls.requestReviewers({
+        owner,
+        repo,
+        pull_number: prNumber,
+        reviewers: [appInfo.slug],
+      });
+
       const files = await context.octokit.pulls.listFiles({
         owner,
         repo,
@@ -49,7 +63,6 @@ export default (app: Probot) => {
         const cachedComments = await redis.get(cacheKey);
         if (cachedComments) {
           context.log.info(`Using cached result for ${file.filename} - skipping comment posting`);
-
           continue;
         }
 
