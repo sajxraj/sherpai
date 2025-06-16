@@ -48,18 +48,21 @@ export async function getAIComments(
     For each issue found, provide a clear explanation and suggestion for improvement.
     Be thorough and don't hesitate to point out even minor issues that could cause problems.
     
-    Remember: Your entire response must be a valid JSON array. Do not include any other text or explanation outside the JSON array.
+    CRITICAL: Your response must be a valid JSON array ONLY. Do not include any markdown formatting, code blocks, or any other text outside the JSON array.
+    Do not wrap the response in \`\`\`json or any other markdown formatting.
     
     Here's the diff to review:\n\n${patch}`;
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
     });
 
     try {
-        const response = completion.choices[0].message.content ?? "[]";
+        let response = completion.choices[0].message.content ?? "[]";
+        // Clean up potential markdown formatting
+        response = response.replace(/```json\n?|\n?```/g, '').trim();
         return JSON.parse(response) as AIComment[];
     } catch (error) {
         console.error("Error parsing AI response:", error);
