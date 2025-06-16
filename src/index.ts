@@ -1,7 +1,7 @@
-import "dotenv/config";
-import { Probot } from "probot";
 import { Redis } from "@upstash/redis";
 import crypto from "crypto";
+import "dotenv/config";
+import { Probot } from "probot";
 import { getAIComments } from "./services/ai.service.js";
 
 if (!process.env.APP_ID) {
@@ -10,8 +10,13 @@ if (!process.env.APP_ID) {
 if (!process.env.PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set");
 }
-if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-  throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables must be set");
+if (
+  !process.env.UPSTASH_REDIS_REST_URL ||
+  !process.env.UPSTASH_REDIS_REST_TOKEN
+) {
+  throw new Error(
+    "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables must be set"
+  );
 }
 
 const redis = new Redis({
@@ -27,12 +32,60 @@ export default (app: Probot) => {
   app.on(
     ["pull_request.opened", "pull_request.synchronize"],
     async (context) => {
+      const eslintConfigFiles = [
+        ".eslintrc.js",
+        ".eslintrc.json",
+        ".eslintrc",
+        "eslint.config.js",
+        "eslint.config.mjs",
+        "eslint.config.cjs",
+      ];
+
       const config = await context.config("sherpai.yml");
       const pr = context.payload.pull_request;
       const owner = context.payload.repository.owner.login;
       const repo = context.payload.repository.name;
       const prNumber = pr.number;
       const headSha = pr.head.sha;
+
+      let eslintConfigContent = null;
+
+      for (const path of eslintConfigFiles) {
+        try {
+          const response = await context.octokit.repos.getContent({
+            owner: owner,
+            repo: repo,
+            path,
+            ref: pr.head.sha, // get file from PR branch
+          });
+
+          console.log(response.data);
+
+          const content = Buffer.from(
+            (response.data as { content: string }).content,
+            "base64"
+          ).toString();
+          console.log("🚀 ~ content:", content);
+
+          // Handle based on file type
+          if (path.endsWith(".json") || path.endsWith(".eslintrc")) {
+            const config = JSON.parse(content);
+            eslintConfigContent = config;
+            console.log("ESLint config:", config);
+          } else if (
+            path.endsWith(".js") ||
+            path.endsWith(".cjs") ||
+            path.endsWith(".mjs")
+          ) {
+            eslintConfigContent = content;
+            console.log("ESLint config:", content);
+          }
+
+          break; // found one, no need to keep searching
+        } catch (e) {
+          console.error(`Error reading ${path}:`, e);
+        }
+      }
 
       const files = await context.octokit.pulls.listFiles({
         owner,
@@ -48,7 +101,9 @@ export default (app: Probot) => {
 
         const cachedComments = await redis.get(cacheKey);
         if (cachedComments) {
-          context.log.info(`Using cached result for ${file.filename} - skipping comment posting`);
+          context.log.info(
+            `Using cached result for ${file.filename} - skipping comment posting`
+          );
 
           continue;
         }
@@ -56,7 +111,8 @@ export default (app: Probot) => {
         const comments = await getAIComments(
           file.filename,
           file.patch,
-          config ? JSON.stringify(config) : null
+          config ? JSON.stringify(config) : null,
+          eslintConfigContent
         );
 
         // Cache the comments with a 4-day expiration
