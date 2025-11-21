@@ -39,7 +39,6 @@ export async function getAIComments(
 
     CONTEXT:
     File: ${filename}
-    Frameworks: Next.js, React, TypeScript, NestJS.
     
     INSTRUCTIONS:
     1. Review the code patch below.
