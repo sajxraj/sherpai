@@ -1,7 +1,7 @@
-import "dotenv/config";
-import { Probot } from "probot";
 import { Redis } from "@upstash/redis";
 import crypto from "crypto";
+import "dotenv/config";
+import { Probot } from "probot";
 import { getAIComments } from "./services/ai.service.js";
 
 if (!process.env.APP_ID || !process.env.PRIVATE_KEY) {
@@ -42,11 +42,9 @@ async function runReview(context: any, prNumber: number, headSha: string) {
 
     if (addedLines.length === 0) continue;
 
-    const patchForAI = addedLines.map((l) => l.line).join("\n");
-
     const aiComments = await getAIComments(
         file.filename,
-        patchForAI,
+        file.patch,
         config ? JSON.stringify(config) : null
     );
 
@@ -103,6 +101,7 @@ export default (app: Probot) => {
       repo: repo.name,
       pull_number: prNumber,
     });
+
 
     await runReview(context, prNumber, pr.data.head.sha);
 
