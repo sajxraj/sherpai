@@ -26,6 +26,8 @@ async function runReview(context: any, prNumber: number, headSha: string) {
     pull_number: prNumber,
   });
 
+  let commentsCount = 0;
+
   for (const file of files.data) {
     if (!file.patch) continue;
 
@@ -76,12 +78,16 @@ async function runReview(context: any, prNumber: number, headSha: string) {
           side: "RIGHT",
         });
 
+        commentsCount++;
+
         await redis.set(cacheKey, true, { ex: 345600 }); // cache per line per commit
       } catch (err) {
         context.log.error("Failed to post review comment", err);
       }
     }
   }
+
+  return { commentsCount };
 }
 
 export default (app: Probot) => {
@@ -103,13 +109,13 @@ export default (app: Probot) => {
     });
 
 
-    await runReview(context, prNumber, pr.data.head.sha);
+    const { commentsCount } = await runReview(context, prNumber, pr.data.head.sha);
 
     await context.octokit.issues.createComment({
       owner: repo.owner.login,
       repo: repo.name,
       issue_number: prNumber,
-      body: "Hope you find the comments helpful.",
+      body: commentsCount ? `Hope you find the comments helpful. Total comments: ${commentsCount}` : `I have not found any issues in this PR.`,
     });
   });
 
