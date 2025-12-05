@@ -6,7 +6,15 @@ let openai: OpenAI | null = null;
 
 function getOpenAI() {
     if (!openai) {
-        openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
+        const apiKey = process.env.OPENROUTER_API_KEY;
+        if (!apiKey) {
+            throw new Error("OPENROUTER_API_KEY environment variable is required");
+        }
+        
+        openai = new OpenAI({
+            apiKey,
+            baseURL: "https://openrouter.ai/api/v1",
+        });
     }
     return openai;
 }
@@ -80,7 +88,7 @@ export async function getAIComments(
     ${numberedPatch}`;
 
     const completion = await getOpenAI().chat.completions.create({
-        model: "gpt-5.1",
+        model: process.env.AI_MODEL || "openai/gpt-5.1",
         messages: [{role: "user", content: prompt}],
         temperature: 0.3,
     });
