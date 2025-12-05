@@ -14,6 +14,9 @@ function getOpenAI() {
         openai = new OpenAI({
             apiKey,
             baseURL: "https://openrouter.ai/api/v1",
+            defaultHeaders: {
+                "X-Title": "Sherpai",
+            },
         });
     }
     return openai;
@@ -88,7 +91,7 @@ export async function getAIComments(
     ${numberedPatch}`;
 
     const completion = await getOpenAI().chat.completions.create({
-        model: process.env.AI_MODEL || "openai/gpt-5.1",
+        model: process.env.AI_MODEL || "openai/gpt-4-turbo",
         messages: [{role: "user", content: prompt}],
         temperature: 0.3,
     });
